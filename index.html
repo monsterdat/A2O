@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Alps 2 Ocean</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f1117;--bg2:#181c26;--bg3:#1f2435;--bg4:#262c3d;
+  --green:#2dcc8f;--green2:#1a8a60;--green-dim:#0e3d2a;
+  --blue:#4a9eff;--blue-dim:#0e2a4a;
+  --amber:#f5a623;--amber-dim:#3d2a0a;
+  --red:#e85555;--red-dim:#3d1010;
+  --txt:#f0eff4;--txt2:#9ca3b8;--txt3:#5c6480;
+  --border:#2a2f45;--border2:#353c55;
+}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-tap-highlight-color:transparent;}
+.app{max-width:430px;margin:0 auto;min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);}
+.header-inner{padding:16px 16px 0;}
+.trip-name{font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:var(--green);font-family:'DM Mono',monospace;}
+.header-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px;padding-bottom:14px;}
+.trip-title{font-size:26px;font-weight:700;color:var(--txt);line-height:1.1;letter-spacing:-0.5px;}
+.trip-sub{font-size:12px;color:var(--txt2);margin-top:3px;}
+.countdown{text-align:right;flex-shrink:0;margin-left:12px;}
+.cd-num{font-size:38px;font-weight:700;color:var(--green);line-height:1;font-family:'DM Mono',monospace;display:block;}
+.cd-lbl{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.08em;}
+
+/* NAV */
+.nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;}
+.nav button{flex:1;padding:15px 4px;font-size:14px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--txt3);white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color 0.15s;}
+.nav button.active{color:var(--green);border-bottom-color:var(--green);}
+.section{display:none;}
+.section.active{display:block;}
+
+/* TIMELINE */
+.day-card{border-bottom:1px solid var(--border);}
+.day-header{display:flex;align-items:center;gap:12px;padding:18px 16px;cursor:pointer;min-height:68px;}
+.day-header:active{background:var(--bg2);}
+.day-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.dot-flight{background:var(--blue);}
+.dot-cycling{background:var(--green);}
+.dot-rest{background:var(--txt3);}
+.dot-explore{background:var(--amber);}
+.day-text{flex:1;}
+.day-label{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;letter-spacing:0.04em;}
+.day-title{font-size:16px;font-weight:600;color:var(--txt);margin-top:2px;line-height:1.25;}
+.day-chev{color:var(--txt3);font-size:22px;flex-shrink:0;line-height:1;transition:transform 0.2s;}
+.events{display:none;padding:4px 16px 14px 40px;}
+.events.open{display:block;}
+.event{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.event:last-child{border-bottom:none;}
+.event-time{font-size:11px;color:var(--txt3);min-width:52px;padding-top:2px;font-family:'DM Mono',monospace;}
+.event-body{flex:1;}
+.event-name{font-size:14px;font-weight:500;color:var(--txt);}
+.event-detail{font-size:12px;color:var(--txt2);margin-top:3px;line-height:1.5;}
+.event-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.action-btn{font-size:13px;padding:9px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--txt2);cursor:pointer;text-decoration:none;display:inline-block;font-family:'DM Sans',sans-serif;}
+.action-btn:active{background:var(--bg4);}
+
+/* OUTDOOR */
+.outdoor-wrap{padding:12px 12px 28px;}
+.total-bar{background:var(--bg2);border:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-radius:12px;}
+.total-label{font-size:13px;color:var(--txt2);}
+.total-val{font-size:16px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace;}
+.out-card{margin-bottom:10px;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--bg2);}
+.out-card.is-cycling{border-color:var(--green2);background:linear-gradient(160deg,#0d1f18 0%,var(--bg2) 60%);}
+.out-header{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;min-height:62px;}
+.out-header:active{background:var(--bg3);}
+.out-header-left{flex:1;}
+.out-date{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;}
+.out-title{font-size:15px;font-weight:600;color:var(--txt);margin-top:3px;line-height:1.25;padding-right:8px;}
+.out-badge{font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;flex-shrink:0;white-space:nowrap;font-family:'DM Mono',monospace;}
+.badge-cycling{background:var(--green-dim);color:var(--green);border:1px solid var(--green2);}
+.badge-explore{background:var(--amber-dim);color:var(--amber);border:1px solid #7a5010;}
+.badge-rest{background:var(--bg3);color:var(--txt3);border:1px solid var(--border);}
+.badge-travel{background:var(--blue-dim);color:var(--blue);border:1px solid #1a4a80;}
+.badge-warn{background:var(--red-dim);color:var(--red);border:1px solid #7a2020;}
+
+/* glanceable summary — readable at handlebar distance */
+.out-summary{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-top:1px solid var(--border);}
+.osc{padding:16px 6px;text-align:center;border-right:1px solid var(--border);}
+.osc:last-child{border-right:none;}
+.osc-icon{font-size:24px;line-height:1;margin-bottom:6px;}
+.osc-val{font-size:20px;font-weight:700;color:var(--txt);font-family:'DM Mono',monospace;line-height:1;}
+.osc-sub{font-size:10px;color:var(--txt3);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;}
+
+/* expanded */
+.out-detail{display:none;border-top:1px solid var(--border);}
+.out-detail.open{display:block;}
+.wx-strip3{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);}
+.wx-cell{padding:14px 10px;border-right:1px solid var(--border);}
+.wx-cell:last-child{border-right:none;}
+.wx-time{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;font-family:'DM Mono',monospace;}
+.wx-icon{font-size:22px;margin-bottom:4px;}
+.wx-temp{font-size:24px;font-weight:700;color:var(--txt);font-family:'DM Mono',monospace;}
+.wx-desc{font-size:11px;color:var(--txt2);margin-top:4px;line-height:1.3;}
+.out-tip{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--txt2);line-height:1.5;}
+.out-tip:last-child{border-bottom:none;}
+.out-tip strong{color:var(--txt);}
+.rain-tip{color:#7ab8ff;}
+.ride-stops{padding:10px 16px;border-bottom:1px solid var(--border);}
+.stop{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.stop:last-child{border-bottom:none;}
+.stop-km{font-size:13px;color:var(--green);min-width:42px;font-family:'DM Mono',monospace;font-weight:500;}
+.stop-name{font-size:13px;font-weight:500;color:var(--txt);}
+.stop-note{font-size:12px;color:var(--txt2);margin-top:2px;}
+.out-links{padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;}
+.out-link{font-size:13px;padding:9px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--txt2);text-decoration:none;}
+.out-link:active{background:var(--bg4);}
+
+/* WEATHER */
+.wx-section{padding:12px;}
+.div-lbl{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.08em;padding:12px 4px 6px;font-family:'DM Mono',monospace;}
+.rel-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px;}
+.rel-cell{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;}
+.rel-days{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px;font-family:'DM Mono',monospace;}
+.rel-t{font-size:11px;color:var(--green);}
+.rel-r{font-size:11px;color:var(--txt3);margin-top:2px;}
+.src-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+.src-hdr{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.src-name{font-size:14px;font-weight:600;color:var(--txt);}
+.stag{font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;font-family:'DM Mono',monospace;}
+.stag.live{background:var(--green-dim);color:var(--green);border:1px solid var(--green2);}
+.stag.official{background:var(--blue-dim);color:var(--blue);border:1px solid #1a4a80;}
+.stag.wind{background:var(--bg3);color:var(--txt3);border:1px solid var(--border2);}
+.src-desc{padding:10px 14px;font-size:12px;color:var(--txt2);line-height:1.5;border-bottom:1px solid var(--border);}
+.src-links{padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;}
+.src-link{font-size:12px;padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--txt2);text-decoration:none;}
+.src-link:active{background:var(--bg4);}
+.loc-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.loc-hdr{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.loc-name{font-size:14px;font-weight:600;color:var(--txt);}
+.loc-sub{font-size:11px;color:var(--txt3);}
+.loc-days{display:grid;grid-template-columns:repeat(4,1fr);}
+.loc-day{padding:12px 4px;text-align:center;border-right:1px solid var(--border);}
+.loc-day:last-child{border-right:none;}
+.ld-date{font-size:10px;color:var(--txt3);margin-bottom:4px;font-family:'DM Mono',monospace;}
+.ld-icon{font-size:22px;margin-bottom:4px;}
+.ld-max{font-size:15px;font-weight:700;color:var(--txt);font-family:'DM Mono',monospace;}
+.ld-min{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;}
+.ld-rain{font-size:10px;color:var(--blue);margin-top:2px;}
+.loading-msg{padding:2rem 1rem;text-align:center;font-size:13px;color:var(--txt3);}
+.err-msg{padding:1rem;font-size:12px;color:var(--txt2);background:var(--bg2);border-radius:10px;line-height:1.5;border:1px solid var(--border);}
+.refresh-btn{display:block;width:100%;padding:15px;text-align:center;border:1px solid var(--border2);border-radius:10px;font-size:15px;color:var(--txt2);background:var(--bg2);cursor:pointer;margin-bottom:12px;font-family:'DM Sans',sans-serif;font-weight:500;}
+.refresh-btn:active{background:var(--bg3);}
+.last-upd{font-size:11px;color:var(--txt3);text-align:center;padding:0 0 10px;font-family:'DM Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div class="header-inner">
+    <div class="trip-name">Alps 2 Ocean · NZ 2026</div>
+    <div class="header-row">
+      <div>
+        <div class="trip-title">Trail Companion</div>
+        <div class="trip-sub">Apr 2–12 · Chin Kuan & Erlina</div>
+      </div>
+      <div class="countdown">
+        <span class="cd-num" id="cdnum">—</span>
+        <span class="cd-lbl">days away</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="active" onclick="switchTab('timeline',this)">Timeline</button>
+  <button onclick="switchTab('outdoor',this)">Outdoor</button>
+  <button onclick="switchTab('weather',this)">Weather</button>
+</div>
+
+<!-- ══ TIMELINE ══ -->
+<div id="timeline" class="section active">
+  <div class="day-card"><div class="day-header" onclick="tog('d1')"><div class="day-dot dot-flight"></div><div class="day-text"><div class="day-label">Thu 2 Apr</div><div class="day-title">Depart Singapore</div></div><span class="day-chev" id="ch-d1">›</span></div><div class="events" id="d1"><div class="event"><div class="event-time">19:50</div><div class="event-body"><div class="event-name">SQ 297 · SIN → CHC</div><div class="event-detail">Premium Economy · A350-900 · 9h 40m · Conf: DPKX7I</div></div></div></div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d2')"><div class="day-dot dot-rest"></div><div class="day-text"><div class="day-label">Fri 3 Apr</div><div class="day-title">Arrive CHC · Drive to Rakaia Gorge</div></div><span class="day-chev" id="ch-d2">›</span></div><div class="events" id="d2">
+    <div class="event"><div class="event-time">10:30</div><div class="event-body"><div class="event-name">Arrive CHC · Terminal 3</div></div></div>
+    <div class="event"><div class="event-time">11:30</div><div class="event-body"><div class="event-name">Pick up JUCY Campervan</div><div class="event-detail">157 Orchard Road, Harewood</div><div class="event-actions"><a class="action-btn" href="tel:+6493744360">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=JUCY+Christchurch+Airport" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">~13:30</div><div class="event-body"><div class="event-name">Drive to Rakaia Gorge</div><div class="event-detail">~1.5hr from CHC · scenic gorge road</div></div></div>
+    <div class="event"><div class="event-time">14:00</div><div class="event-body"><div class="event-name">Check in · Rakaia Gorge Campground</div><div class="event-detail">6686 Arundel Rakaia Gorge Road, Mt Hutt</div><div class="event-actions"><a class="action-btn" href="tel:+64212511817">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=Rakaia+Gorge+Campground" target="_blank">📍 Map</a></div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d3')"><div class="day-dot dot-cycling"></div><div class="day-text"><div class="day-label">Sat 4 Apr</div><div class="day-title">Drive to Tekapo · Bike fitting</div></div><span class="day-chev" id="ch-d3">›</span></div><div class="events" id="d3">
+    <div class="event"><div class="event-time">Morning</div><div class="event-body"><div class="event-name">Check out · Rakaia Gorge Campground</div><div class="event-detail">Drive to Lake Tekapo · ~1.5hr via SH77 & SH8</div></div></div>
+    <div class="event"><div class="event-time">~11:00</div><div class="event-body"><div class="event-name">Arrive Lake Tekapo</div></div></div>
+    <div class="event"><div class="event-time">14:00</div><div class="event-body"><div class="event-name">Bike Fitting — BeSpoke Bike Tours NZ</div><div class="event-detail">8 Simpson Lane · until 17:00</div><div class="event-actions"><a class="action-btn" href="tel:+64211513742">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=8+Simpson+Lane+Lake+Tekapo" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">15:00</div><div class="event-body"><div class="event-name">Check in · Lakes Edge Holiday Park</div><div class="event-actions"><a class="action-btn" href="tel:+6436806825">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=Lakes+Edge+Holiday+Park+Tekapo" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">18:30</div><div class="event-body"><div class="event-name">🍽 Dinner options · Lake Tekapo</div><div class="event-detail">① Reflections Restaurant — lakeside views, NZ mains (lamb shank, salmon, seafood chowder), good wine list · 16 Rapuwai Lane · ② Dark Sky Diner — casual lakefront dining, walk-in, fish & chips, burgers, ribs · ③ Kohan Japanese — legendary salmon don & sashimi, A2O favourite, book ahead</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d4')"><div class="day-dot dot-cycling"></div><div class="day-text"><div class="day-label">Sun 5 Apr</div><div class="day-title">🚴 Day 1 · 55km · Tekapo → Twizel</div></div><span class="day-chev" id="ch-d4">›</span></div><div class="events" id="d4">
+    <div class="event"><div class="event-time">07:30</div><div class="event-body"><div class="event-name">Breakfast · The Greedy Cow Cafe</div><div class="event-actions"><a class="action-btn" href="tel:+64274344445">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=The+Greedy+Cow+Cafe+Tekapo" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">08:30</div><div class="event-body"><div class="event-name">Start riding</div><div class="event-detail" id="tl-d1-start">—</div></div></div>
+    <div class="event"><div class="event-time">~11:00</div><div class="event-body"><div class="event-name">Lunch · Tekapo A Power Station · KM 31</div><div class="event-detail" id="tl-d1-lunch">—</div></div></div>
+    <div class="event"><div class="event-time">~14:00</div><div class="event-body"><div class="event-name">Stopover · Mt Cook Alpine Salmon · KM 45</div><div class="event-actions"><a class="action-btn" href="tel:+6434350427">📞 Call</a></div></div></div>
+    <div class="event"><div class="event-time">16:00</div><div class="event-body"><div class="event-name">Check in · Distinction Mackenzie Twizel</div><div class="event-detail">Conf: 592459211 · NZD 514</div><div class="event-actions"><a class="action-btn" href="tel:+6434350869">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=Distinction+Mackenzie+Country+Hotel+Twizel" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">18:30</div><div class="event-body"><div class="event-name">🍽 Dinner options · Twizel</div><div class="event-detail">① Poppies Café & Restaurant — local favourite, fresh ingredients from their own garden, beautifully presented, book ahead · ② Ministry of Works Bar & Eatery — great craft beer, world-inspired street food, lively atmosphere, Tue–Sat · ③ High Country Salmon — all about the local salmon, bowls & mains, relaxed</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d5')"><div class="day-dot dot-cycling"></div><div class="day-text"><div class="day-label">Mon 6 Apr</div><div class="day-title">🚴 Day 2 · 38km · Twizel → Lake Ōhau</div></div><span class="day-chev" id="ch-d5">›</span></div><div class="events" id="d5">
+    <div class="event"><div class="event-time">07:30</div><div class="event-body"><div class="event-name">🥐 Breakfast options · Twizel</div><div class="event-detail">① Distinction Mackenzie — hotel breakfast, most convenient, fuel up before the ride · ② Poppies Café — highly rated, fresh local ingredients, pancakes & eggs Benedict, opens early · ③ Hydro Café — locals' favourite, great coffee & big breakfast, opens early enough for a 09:00 ride start · 📍 All within walking distance of Distinction Hotel</div></div></div>
+    <div class="event"><div class="event-time">08:30</div><div class="event-body"><div class="event-name">Breakfast at hotel (included)</div></div></div>
+    <div class="event"><div class="event-time">09:00</div><div class="event-body"><div class="event-name">Start riding</div><div class="event-detail" id="tl-d2-start">—</div></div></div>
+    <div class="event"><div class="event-time">~11:30</div><div class="event-body"><div class="event-name">Lunch · Ōhau Weir · KM 20</div><div class="event-detail" id="tl-d2-lunch">—</div></div></div>
+    <div class="event"><div class="event-time">15:00</div><div class="event-body"><div class="event-name">Check in · Lake Ōhau Lodge</div><div class="event-actions"><a class="action-btn" href="tel:+6434389885">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=Lake+Ohau+Lodge" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">19:00</div><div class="event-body"><div class="event-name">🍽 Dinner · Lake Ōhau Lodge Restaurant</div><div class="event-detail">3-course set menu · soup + choice of Aoraki salmon or ribeye beef + dessert · communal tables, book on arrival · only restaurant on-site</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d6')"><div class="day-dot dot-cycling"></div><div class="day-text"><div class="day-label">Tue 7 Apr</div><div class="day-title">🚴 Day 3 · 43km · Ōhau → Ōmarama ⭐</div></div><span class="day-chev" id="ch-d6">›</span></div><div class="events" id="d6">
+    <div class="event"><div class="event-time">06:30</div><div class="event-body"><div class="event-name">🥐 Breakfast · Day 3 is your earliest start</div><div class="event-detail">① Distinction Heritage — hotel breakfast, most practical, get in early and be on the road by 08:00 · ② The Wrinkly Rams — opens early, great pancakes, avocado toast & cooked breakfast, fireplace inside · ③ Grab & go — stock up at the hotel the night before for a 07:30 pre-ride snack if you want to maximise time before rain</div></div></div>
+    <div class="event"><div class="event-time">08:00</div><div class="event-body"><div class="event-name">Start riding — earliest start</div><div class="event-detail" id="tl-d3-start">—</div></div></div>
+    <div class="event"><div class="event-time">~11:30</div><div class="event-body"><div class="event-name">Packed lunch · Quailburn · KM 19</div><div class="event-detail" id="tl-d3-lunch">—</div></div></div>
+    <div class="event"><div class="event-time">14:00</div><div class="event-body"><div class="event-name">Check in · Distinction Heritage Ōmarama</div><div class="event-detail">Conf: 592464095 · NZD 174</div><div class="event-actions"><a class="action-btn" href="https://maps.google.com/?q=Distinction+Heritage+Gateway+Hotel+Omarama" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">18:00</div><div class="event-body"><div class="event-name">🍽 Dinner options · Ōmarama</div><div class="event-detail">① The Wrinkly Rams Café — homemade country food, good pies & mains, iconic stop on the A2O trail · ② Distinction Heritage Restaurant — hotel dining, convenient after a long ride day · Note: Ōmarama is tiny — limited options, book early or eat at hotel</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d7')"><div class="day-dot dot-cycling"></div><div class="day-text"><div class="day-label">Wed 8 Apr</div><div class="day-title">🚴 Day 4 · 35km · Ōmarama → Otematata</div></div><span class="day-chev" id="ch-d7">›</span></div><div class="events" id="d7">
+    <div class="event"><div class="event-time">08:00</div><div class="event-body"><div class="event-name">🥐 Breakfast options · Ōmarama</div><div class="event-detail">① The Wrinkly Rams — best breakfast in Ōmarama, pancakes with yoghurt & bacon, avocado toast, good coffee, fireplace · 29 Omarama Ave · ② Distinction Heritage — hotel breakfast, easy option, later start means no rush · ③ Merino Country Café — simple roadside café, self-serve, good flat white, quick stop before you roll</div></div></div>
+    <div class="event"><div class="event-time">09:30</div><div class="event-body"><div class="event-name">Start riding</div><div class="event-detail" id="tl-d4-start">—</div></div></div>
+    <div class="event"><div class="event-time">~11:30</div><div class="event-body"><div class="event-name">Flexible scenic stop</div><div class="event-detail" id="tl-d4-lunch">—</div></div></div>
+    <div class="event"><div class="event-time">15:00</div><div class="event-body"><div class="event-name">Shuttle back to Tekapo · arrives 17:30</div></div></div>
+    <div class="event"><div class="event-time">17:00</div><div class="event-body"><div class="event-name">Check in · Peppers Bluewater Resort</div><div class="event-detail">Conf: 1962232479 · NZD 249</div><div class="event-actions"><a class="action-btn" href="https://maps.google.com/?q=Peppers+Bluewater+Resort+Lake+Tekapo" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">19:00</div><div class="event-body"><div class="event-name">🍽 Dinner options · Lake Tekapo</div><div class="event-detail">① Rakinui Restaurant at Peppers — farm-to-table, local produce, lake views, most convenient post-shuttle · ② Dark Sky Diner — lakefront, relaxed, Kiwi favourites (fish & chips, ribs, antipasto), walk-in only · ③ Kohan Japanese — legendary salmon don, best sushi/sashimi in the Mackenzie, book ahead</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d8')"><div class="day-dot dot-rest"></div><div class="day-text"><div class="day-label">Thu 9 Apr</div><div class="day-title">Check in · The Hermitage · Mt Cook</div></div><span class="day-chev" id="ch-d8">›</span></div><div class="events" id="d8">
+    <div class="event"><div class="event-time">Morning</div><div class="event-body"><div class="event-name">Check out · Peppers Bluewater Resort</div></div></div>
+    <div class="event"><div class="event-time">~11:00</div><div class="event-body"><div class="event-name">Drive Tekapo → Mt Cook</div><div class="event-detail">~1.5hr via SH8 · stunning Lake Pukaki views en route</div></div></div>
+    <div class="event"><div class="event-time">15:00</div><div class="event-body"><div class="event-name">Check in · The Hermitage</div><div class="event-detail">Conf: R15A53 · NZD 980 · Standard Mt Cook Queen</div><div class="event-actions"><a class="action-btn" href="tel:+6497454467">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=The+Hermitage+Aoraki+Mount+Cook" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">18:00</div><div class="event-body"><div class="event-name">🍽 Dinner options · The Hermitage</div><div class="event-detail">① Panorama Room — premium à la carte, award-winning, local Canterbury produce, stunning Mt Cook views · book essential: hermitage.co.nz · ② Alpine Restaurant — buffet dinner, all-you-can-eat with mountain views, more casual · ③ Snowline Bar & Lounge — cocktails + small plates by the log fire, ideal for a lighter evening</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d9')"><div class="day-dot dot-explore"></div><div class="day-text"><div class="day-label">Fri 10 Apr</div><div class="day-title">Full day · Aoraki Mt Cook</div></div><span class="day-chev" id="ch-d9">›</span></div><div class="events" id="d9">
+    <div class="event"><div class="event-time">Sunrise</div><div class="event-body"><div class="event-name">Early alpine sunrise</div><div class="event-detail">Best from your balcony or the hotel grounds — worth the wake-up</div></div></div>
+    <div class="event"><div class="event-time">09:00</div><div class="event-body"><div class="event-name">Hooker Valley Track or Kea Point walk</div><div class="event-detail">Hooker Valley: 3hr return · glacier terminal lake at the end · Kea Point: 1.5hr, easier, great views</div></div></div>
+    <div class="event"><div class="event-time">Afternoon</div><div class="event-body"><div class="event-name">Sir Edmund Hillary Alpine Centre</div><div class="event-detail">Planetarium + Mt Cook history — great if weather closes in</div></div></div>
+    <div class="event"><div class="event-time">18:00</div><div class="event-body"><div class="event-name">🍽 Dinner options · The Hermitage</div><div class="event-detail">① Panorama Room — à la carte, local Canterbury produce, award-winning · book: hermitage.co.nz · ② Alpine Restaurant — dinner buffet, mountain views from every seat, more casual · ③ Snowline Bar — cocktails + small plates by the log fire, lighter option</div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d10')"><div class="day-dot dot-rest"></div><div class="day-text"><div class="day-label">Sat 11 Apr</div><div class="day-title">Check out Hermitage · Drive to CHC</div></div><span class="day-chev" id="ch-d10">›</span></div><div class="events" id="d10">
+    <div class="event"><div class="event-time">Morning</div><div class="event-body"><div class="event-name">Last sunrise walk or coffee at Sir Ed Hillary Café</div></div></div>
+    <div class="event"><div class="event-time">10:00</div><div class="event-body"><div class="event-name">Check out · The Hermitage</div></div></div>
+    <div class="event"><div class="event-time">~10:15</div><div class="event-body"><div class="event-name">Drive Mt Cook → Christchurch</div><div class="event-detail">~3.5hr via SH8 · depart by 10:15 to reach CHC by 14:00</div></div></div>
+    <div class="event"><div class="event-time">~14:00</div><div class="event-body"><div class="event-name">Return JUCY campervan · CHC Airport</div><div class="event-detail">157 Orchard Road, Harewood · must return by 16:00</div><div class="event-actions"><a class="action-btn" href="tel:+6493744360">📞 JUCY</a><a class="action-btn" href="https://maps.google.com/?q=JUCY+Christchurch+Airport" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">14:00</div><div class="event-body"><div class="event-name">Check in · Novotel Christchurch Airport</div><div class="event-detail">Conf: 1962230968 · NZD 305</div><div class="event-actions"><a class="action-btn" href="tel:+6433576617">📞 Call</a><a class="action-btn" href="https://maps.google.com/?q=Novotel+Christchurch+Airport" target="_blank">📍 Map</a></div></div></div>
+    <div class="event"><div class="event-time">18:00</div><div class="event-body"><div class="event-name">🍽 Dinner options · Christchurch Airport area</div><div class="event-detail">① Lone Star Spitfire — classic NZ ribs & steaks, great celebratory last night · ② Winnie Bagoes — wood-fired pizza & craft beer, laid-back · ③ Bodhi Tree — upscale Burmese in central CHC, worth the taxi for something special</div><div class="event-actions"><a class="action-btn" href="tel:+6434215680">📞 Lone Star</a><a class="action-btn" href="https://maps.google.com/?q=Lone+Star+Spitfire+Christchurch+Airport" target="_blank">📍 Map</a></div></div></div>
+  </div></div>
+
+  <div class="day-card"><div class="day-header" onclick="tog('d11')"><div class="day-dot dot-flight"></div><div class="day-text"><div class="day-label">Sun 12 Apr</div><div class="day-title">Fly home · CHC → SIN</div></div><span class="day-chev" id="ch-d11">›</span></div><div class="events" id="d11">
+    <div class="event"><div class="event-time">10:50</div><div class="event-body"><div class="event-name">SQ 298 · CHC → SIN</div><div class="event-detail">Economy · A350-900 · 10h 50m · Conf: DPVXO3 · Arrives 17:40 SGT</div></div></div>
+  </div></div>
+</div>
+
+<!-- ══ OUTDOOR ══ -->
+<div id="outdoor" class="section">
+  <div class="outdoor-wrap">
+    <div class="total-bar"><span class="total-label">Total cycling</span><span class="total-val">171 km · 4 days</span></div>
+    <div id="outdoor-cards"><div class="loading-msg">Fetching live conditions...</div></div>
+  </div>
+</div>
+
+<!-- ══ WEATHER ══ -->
+<div id="weather" class="section">
+  <div class="wx-section">
+    <div class="div-lbl">Reliability guide</div>
+    <div class="rel-strip">
+      <div class="rel-cell"><div class="rel-days">1–2d</div><div class="rel-t">Temp ✅</div><div class="rel-r">Rain ✅</div></div>
+      <div class="rel-cell"><div class="rel-days">3–5d</div><div class="rel-t">Temp ✅</div><div class="rel-r">Rain ⚠️</div></div>
+      <div class="rel-cell"><div class="rel-days">6–16d</div><div class="rel-t">Temp ⚠️</div><div class="rel-r">Rain ❌</div></div>
+    </div>
+    <div class="div-lbl">Live data</div>
+    <div class="src-block">
+      <div class="src-hdr"><span class="src-name">Open-Meteo</span><span class="stag live">Live · hourly</span></div>
+      <div class="src-desc">ECMWF, MeteoFrance, DWD & NOAA. Reliable for temp; rain timing ±2–3hrs in alpine terrain.</div>
+      <div class="src-links"><a class="src-link" href="https://open-meteo.com" target="_blank">open-meteo.com ↗</a></div>
+    </div>
+    <div class="div-lbl">Cross-check night before each ride</div>
+    <div class="src-block">
+      <div class="src-hdr"><span class="src-name">MetService NZ</span><span class="stag official">NZ official</span></div>
+      <div class="src-desc">New Zealand's national forecast. Most authoritative for NZ alpine conditions and severe weather warnings.</div>
+      <div class="src-links">
+        <a class="src-link" href="https://www.metservice.com/towns-cities/regions/canterbury-high-country/locations/lake-tekapo" target="_blank">Tekapo ↗</a>
+        <a class="src-link" href="https://www.metservice.com/rural/regions/canterbury-high-country/locations/twizel" target="_blank">Twizel ↗</a>
+        <a class="src-link" href="https://www.metservice.com/rural/regions/canterbury-high-country/locations/omarama" target="_blank">Ōmarama ↗</a>
+        <a class="src-link" href="https://www.metservice.com/mountains-and-parks/national-parks/canterbury-high-country" target="_blank">Mountain ↗</a>
+        <a class="src-link" href="https://www.metservice.com/warnings/home" target="_blank">Warnings ↗</a>
+      </div>
+    </div>
+    <div class="src-block">
+      <div class="src-hdr"><span class="src-name">Windy.com</span><span class="stag wind">Wind visual</span></div>
+      <div class="src-desc">Best for tracking nor'west fronts across the Mackenzie Basin — the key variable on the A2O trail.</div>
+      <div class="src-links">
+        <a class="src-link" href="https://www.windy.com/-44.004/170.476?rain,2026-04-05" target="_blank">Tekapo ↗</a>
+        <a class="src-link" href="https://www.windy.com/-44.483/169.967?wind,2026-04-07" target="_blank">Ōmarama ↗</a>
+      </div>
+    </div>
+    <div class="div-lbl">Live forecast grid</div>
+    <div id="wx-loading" class="loading-msg">Fetching forecasts...</div>
+    <div id="wx-content" style="display:none;">
+      <div class="loc-block"><div class="loc-hdr"><span class="loc-name">Lake Tekapo</span><span class="loc-sub">Days 1, 4 & rest</span></div><div class="loc-days" id="wx-tekapo"></div></div>
+      <div class="loc-block"><div class="loc-hdr"><span class="loc-name">Twizel</span><span class="loc-sub">Night after Day 1</span></div><div class="loc-days" id="wx-twizel"></div></div>
+      <div class="loc-block"><div class="loc-hdr"><span class="loc-name">Ōhau / Ōmarama</span><span class="loc-sub">Days 2 & 3</span></div><div class="loc-days" id="wx-omarama"></div></div>
+      <div class="loc-block"><div class="loc-hdr"><span class="loc-name">Aoraki / Mt Cook</span><span class="loc-sub">Day trip · 10 Apr</span></div><div class="loc-days" id="wx-mtcook"></div></div>
+    </div>
+    <div id="wx-error" class="err-msg" style="display:none;"></div>
+    <div class="last-upd" id="wx-updated"></div>
+    <button class="refresh-btn" onclick="loadWeather()">↻  Refresh forecast</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+<script>
+const WMO={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Dense drizzle',61:'Slight rain',63:'Moderate rain',65:'Heavy rain',71:'Slight snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Rain showers',82:'Heavy showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm+hail',99:'Thunderstorm+hail'};
+const WICO={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'❄️',77:'🌨',80:'🌦',81:'🌧',82:'🌧',85:'🌨',86:'❄️',95:'⛈',96:'⛈',99:'⛈'};
+const wd=c=>WMO[c]||'Variable';const wi=c=>WICO[c]||'🌤';
+const LOCS={tekapo:{lat:-44.0045,lon:170.4762},twizel:{lat:-44.2581,lon:170.0976},omarama:{lat:-44.4833,lon:169.9667},mtcook:{lat:-43.7350,lon:170.0988},christchurch:{lat:-43.5320,lon:172.6362}};
+const DAYS=[
+  {date:'2026-04-02',label:'Thu 2 Apr',title:'Departure day · Singapore',loc:'tekapo',type:'travel',badge:'travel',activity:'In transit',tip:'Flight departs 19:50 SGT. Arrive CHC next morning.',links:[]},
+  {date:'2026-04-03',label:'Fri 3 Apr',title:'Arrive CHC · Drive to Rakaia Gorge',loc:'christchurch',type:'travel',badge:'travel',activity:'Arrival & short drive to Rakaia Gorge (~1.5hr)',tip:'Pick up JUCY campervan then head to Rakaia Gorge. Good decompression after the flight.',links:[{label:'MetService CHC ↗',url:'https://www.metservice.com/towns-cities/regions/canterbury/locations/christchurch'}]},
+  {date:'2026-04-04',label:'Sat 4 Apr',title:'Drive to Tekapo · Bike fitting',loc:'tekapo',type:'explore',badge:'explore',activity:'Morning drive Rakaia Gorge → Tekapo (~1.5hr) · bike fitting 14:00',tip:'Scenic drive via SH77 and SH8 through the Mackenzie Basin. Church of the Good Shepherd walk before the 14:00 fitting.',links:[{label:'MetService Tekapo ↗',url:'https://www.metservice.com/towns-cities/regions/canterbury-high-country/locations/lake-tekapo'}]},
+  {date:'2026-04-05',label:'Sun 5 Apr',title:'🚴 Ride Day 1 · 55km · Tekapo → Twizel',loc:'tekapo',type:'cycling',badge:'cycling',km:55,activity:'Full day cycling — Section 2 (alt route)',tip:'Start early. Lunch at Tekapo A Power Station (KM 31) before afternoon cloud builds. Salmon shop stopover at KM 45.',stops:[{km:'0',name:'Lake Tekapo'},{km:'31',name:'Tekapo A Power Station',note:'Lunch ~11:00'},{km:'45',name:'Salmon Shop · Lake Pukaki'},{km:'55',name:'Twizel · Distinction Hotel'}],links:[{label:'Trail map ↗',url:'https://www.alps2ocean.com/trail-map/alt-route-lake-tekapo-to-twizel'},{label:'MetService ↗',url:'https://www.metservice.com/towns-cities/regions/canterbury-high-country/locations/lake-tekapo'}]},
+  {date:'2026-04-06',label:'Mon 6 Apr',title:'🚴 Ride Day 2 · 38km · Twizel → Ōhau',loc:'twizel',type:'cycling',badge:'cycling',km:38,activity:'Full day cycling — Section 3',tip:'Shorter day. Light rain may develop from midday. Ōhau Weir at KM 20 is your last shelter before the lodge.',stops:[{km:'0',name:'Twizel'},{km:'20',name:'Ōhau Weir',note:'Lunch ~11:30'},{km:'38',name:'Lake Ōhau Lodge'}],links:[{label:'Trail map ↗',url:'https://www.alps2ocean.com/trail-map/section-3-twizel-to-lake-ohau-lodge'},{label:'MetService ↗',url:'https://www.metservice.com/rural/regions/canterbury-high-country/locations/twizel'}]},
+  {date:'2026-04-07',label:'Tue 7 Apr',title:'🚴 Ride Day 3 · 43km · Ōhau → Ōmarama',loc:'omarama',type:'cycling',badge:'cycling',km:43,activity:'Full day cycling — Section 4 · wettest day',tip:'Coldest morning (3–5°C). Depart by 08:00. Keep packed lunch at Quailburn (KM 19) short. Push to finish before afternoon showers.',stops:[{km:'0',name:'Lake Ōhau Lodge'},{km:'19',name:'Quailburn',note:'Packed lunch — keep short'},{km:'43',name:'Ōmarama · Distinction Heritage'}],links:[{label:'Trail map ↗',url:'https://www.alps2ocean.com/trail-map/section-4-lake-ohau-lodge-to-omarama'},{label:'MetService ↗',url:'https://www.metservice.com/rural/regions/canterbury-high-country/locations/omarama'}]},
+  {date:'2026-04-08',label:'Wed 8 Apr',title:'🚴 Ride Day 4 · 35km · Ōmarama → Otematata',loc:'omarama',type:'cycling',badge:'cycling',km:35,activity:'Final ride — best weather of the four',tip:'Rain clears by late morning. Later start is fine. Shuttle back to Tekapo departs 15:00.',stops:[{km:'0',name:'Ōmarama'},{km:'~18',name:'Flexible scenic stop',note:'Lunch ~11:30'},{km:'35',name:'Otematata · shuttle 15:00'}],links:[{label:'Trail map ↗',url:'https://www.alps2ocean.com/trail-map/section-5-omarama-to-otematata'},{label:'MetService ↗',url:'https://www.metservice.com/rural/regions/canterbury-high-country/locations/omarama'}]},
+  {date:'2026-04-09',label:'Thu 9 Apr',title:'Check in · The Hermitage · Mt Cook',loc:'mtcook',type:'explore',badge:'explore',activity:'Drive Tekapo → Mt Cook · check in Hermitage',tip:'~1.5hr drive via SH8 with stunning Lake Pukaki views. Arrive in time for a short walk before dinner. Book the Panorama Room in advance.',links:[{label:'MetService Mountain ↗',url:'https://www.metservice.com/mountains-and-parks/national-parks/canterbury-high-country'},{label:'Hermitage dining ↗',url:'https://www.hermitage.co.nz/dine/'}]},
+  {date:'2026-04-10',label:'Fri 10 Apr',title:'Full day · Aoraki Mt Cook',loc:'mtcook',type:'explore',badge:'explore',activity:'Full day at Mt Cook — walks, views, Hillary Centre · staying at The Hermitage',tip:'Check mountain forecast first. Hooker Valley Track (3hr return) is the must-do — ends at a glacier terminal lake. Kea Point (1.5hr) is shorter. Sir Ed Hillary Centre for the afternoon if weather closes in.',links:[{label:'MetService Mountain ↗',url:'https://www.metservice.com/mountains-and-parks/national-parks/canterbury-high-country'},{label:'DOC Mt Cook ↗',url:'https://www.doc.govt.nz/parks-and-recreation/places-to-go/canterbury/places/aoraki-mount-cook-national-park/'},{label:'Windy ↗',url:'https://www.windy.com/-43.735/170.099'}]},
+  {date:'2026-04-11',label:'Sat 11 Apr',title:'Check out Hermitage · Drive to CHC',loc:'christchurch',type:'travel',badge:'travel',activity:'Check out Hermitage 10:00 · ~3.5hr drive to CHC · return JUCY by 16:00',tip:'Depart Mt Cook by 10:15 to be safe for a 14:00 arrival in CHC. JUCY must be returned by 16:00 at Christchurch Airport.',links:[{label:'MetService CHC ↗',url:'https://www.metservice.com/towns-cities/regions/canterbury/locations/christchurch'}]},
+  {date:'2026-04-12',label:'Sun 12 Apr',title:'Fly home · CHC → SIN',loc:'christchurch',type:'travel',badge:'travel',activity:'Departure · SQ 298 departs 10:50',tip:'Check out Novotel by 11:00. Allow 90min for check-in. Arrives Singapore 17:40 SGT.',links:[]}
+];
+let cache={};
+async function fetchW(loc){
+  if(cache[loc])return cache[loc];
+  const{lat,lon}=LOCS[loc];
+  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode,precipitation,windspeed_10m&timezone=Pacific%2FAuckland&forecast_days=16`);
+  if(!r.ok)throw new Error('API '+r.status);
+  const d=await r.json();cache[loc]=d;return d;
+}
+function idx(data,date,hour){return data.hourly.time.findIndex(t=>t===`${date}T${String(hour).padStart(2,'0')}:00`);}
+function risk(codes,precips){
+  const w=Math.max(...codes),p=Math.max(...precips);
+  if(w>=80||p>3)return{icon:'🌧',label:'Rain expected',cls:'badge-warn'};
+  if(w>=61||p>1)return{icon:'🌦',label:'Showers possible',cls:''};
+  if(w>=51||p>0.2)return{icon:'🌦',label:'Light showers',cls:''};
+  return{icon:w<=1?'☀️':w<=2?'🌤':'⛅',label:wd(w),cls:''};
+}
+function buildCard(day,data){
+  const i8=idx(data,day.date,8),i12=idx(data,day.date,12),i15=idx(data,day.date,15);
+  const t8=i8>=0?Math.round(data.hourly.temperature_2m[i8]):null;
+  const t12=i12>=0?Math.round(data.hourly.temperature_2m[i12]):null;
+  const t15=i15>=0?Math.round(data.hourly.temperature_2m[i15]):null;
+  const c8=i8>=0?data.hourly.weathercode[i8]:0,c12=i12>=0?data.hourly.weathercode[i12]:0,c15=i15>=0?data.hourly.weathercode[i15]:0;
+  const w12=i12>=0?Math.round(data.hourly.windspeed_10m[i12]):null;
+  const p8=i8>=0?data.hourly.precipitation[i8]||0:0,p12=i12>=0?data.hourly.precipitation[i12]||0:0,p15=i15>=0?data.hourly.precipitation[i15]||0:0;
+  const r=risk([c8,c12,c15],[p8,p12,p15]);
+  const rain=(p8+p12+p15).toFixed(1);
+  const isCyc=day.type==='cycling';
+  const bCls=r.cls||('badge-'+day.badge);
+  const bTxt=isCyc?`${day.km}km`:day.badge==='explore'?'Explore':day.badge==='rest'?'Rest':'Travel';
+  const stops=day.stops?.length?`<div class="ride-stops">${day.stops.map(s=>`<div class="stop"><div class="stop-km">${s.km}km</div><div><div class="stop-name">${s.name}</div>${s.note?`<div class="stop-note">${s.note}</div>`:''}</div></div>`).join('')}</div>`:'';
+  const links=day.links?.length?`<div class="out-links">${day.links.map(l=>`<a class="out-link" href="${l.url}" target="_blank">${l.label}</a>`).join('')}</div>`:'';
+  return `<div class="out-card${isCyc?' is-cycling':''}" id="oc-${day.date}">
+<div class="out-header" onclick="togOut('${day.date}')">
+  <div class="out-header-left"><div class="out-date">${day.label}</div><div class="out-title">${day.title}</div></div>
+  <span class="out-badge ${bCls}">${bTxt}</span>
+</div>
+<div class="out-summary">
+  <div class="osc"><div class="osc-icon">${t8!==null?wi(c8):'—'}</div><div class="osc-val">${t8!==null?t8+'°':'—'}</div><div class="osc-sub">8 am</div></div>
+  <div class="osc"><div class="osc-icon">${t12!==null?wi(c12):'—'}</div><div class="osc-val">${t12!==null?t12+'°':'—'}</div><div class="osc-sub">noon</div></div>
+  <div class="osc"><div class="osc-icon">${r.icon}</div><div class="osc-val" style="font-size:13px;line-height:1.3;">${r.label}</div><div class="osc-sub">rain</div></div>
+  <div class="osc"><div class="osc-icon">💨</div><div class="osc-val">${w12!==null?w12:'—'}</div><div class="osc-sub">km/h</div></div>
+</div>
+<div class="out-detail" id="od-${day.date}">
+  <div class="wx-strip3">
+    <div class="wx-cell"><div class="wx-time">8 AM</div><div class="wx-icon">${wi(c8)}</div><div class="wx-temp">${t8!==null?t8+'°':'—'}</div><div class="wx-desc">${wd(c8)}</div></div>
+    <div class="wx-cell"><div class="wx-time">12 PM</div><div class="wx-icon">${wi(c12)}</div><div class="wx-temp">${t12!==null?t12+'°':'—'}</div><div class="wx-desc">${wd(c12)}</div></div>
+    <div class="wx-cell"><div class="wx-time">3 PM</div><div class="wx-icon">${wi(c15)}</div><div class="wx-temp">${t15!==null?t15+'°':'—'}</div><div class="wx-desc">${wd(c15)}</div></div>
+  </div>
+  ${parseFloat(rain)>0?`<div class="out-tip rain-tip">🌧 Est. <strong>${rain}mm</strong> across the ride window</div>`:''}
+  <div class="out-tip"><strong>Activity:</strong> ${day.activity}</div>
+  <div class="out-tip">${day.tip}</div>
+  ${stops}${links}
+</div></div>`;
+}
+async function buildOutdoor(){
+  const c=document.getElementById('outdoor-cards');
+  try{
+    await Promise.all([...new Set(DAYS.map(d=>d.loc))].map(fetchW));
+    c.innerHTML=DAYS.map(d=>buildCard(d,cache[d.loc])).join('');
+    [{date:'2026-04-05',loc:'tekapo',n:1},{date:'2026-04-06',loc:'twizel',n:2},{date:'2026-04-07',loc:'omarama',n:3},{date:'2026-04-08',loc:'omarama',n:4}].forEach(({date,loc,n})=>{
+      const data=cache[loc];
+      const i8=idx(data,date,8),i12=idx(data,date,12);
+      if(i8>=0){const el=document.getElementById(`tl-d${n}-start`);if(el)el.textContent=`${Math.round(data.hourly.temperature_2m[i8])}°C · ${wd(data.hourly.weathercode[i8])}`;}
+      if(i12>=0){const el=document.getElementById(`tl-d${n}-lunch`);if(el)el.textContent=`${Math.round(data.hourly.temperature_2m[i12])}°C · ${wd(data.hourly.weathercode[i12])}`;}
+    });
+  }catch(e){c.innerHTML=`<div class="err-msg">Could not load weather. Check connection and reload.<br><small>${e.message}</small></div>`;}
+}
+function togOut(date){document.getElementById(`od-${date}`)?.classList.toggle('open');}
+function dateLabel(iso){return new Date(iso+'T12:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}).replace(',','');}
+const TRIP_DATES=['2026-04-05','2026-04-06','2026-04-07','2026-04-08'];
+const MTCOOK_DATES=['2026-04-09','2026-04-10','2026-04-11','2026-04-12'];
+function buildCells(data,dates,id){
+  const el=document.getElementById(id);if(!el)return;el.innerHTML='';
+  dates.forEach(d=>{
+    const i12=idx(data,d,12);if(i12<0)return;
+    const i8=idx(data,d,8);
+    const div=document.createElement('div');div.className='loc-day';
+    div.innerHTML=`<div class="ld-date">${dateLabel(d)}</div><div class="ld-icon">${wi(data.hourly.weathercode[i12])}</div><div class="ld-max">${Math.round(data.hourly.temperature_2m[i12])}°</div><div class="ld-min">${i8>=0?Math.round(data.hourly.temperature_2m[i8])+'°':'—'} am</div>${(data.hourly.precipitation[i12]||0)>0?`<div class="ld-rain">${(data.hourly.precipitation[i12]).toFixed(1)}mm</div>`:''}`;
+    el.appendChild(div);
+  });
+}
+async function loadWeather(){
+  document.getElementById('wx-loading').style.display='block';
+  document.getElementById('wx-content').style.display='none';
+  document.getElementById('wx-error').style.display='none';
+  try{
+    const[tek,twi,oma,mtc]=await Promise.all([fetchW('tekapo'),fetchW('twizel'),fetchW('omarama'),fetchW('mtcook')]);
+    buildCells(tek,TRIP_DATES,'wx-tekapo');buildCells(twi,TRIP_DATES,'wx-twizel');
+    buildCells(oma,TRIP_DATES,'wx-omarama');buildCells(mtc,MTCOOK_DATES,'wx-mtcook');
+    document.getElementById('wx-loading').style.display='none';
+    document.getElementById('wx-content').style.display='block';
+    document.getElementById('wx-updated').textContent='Updated '+new Date().toLocaleString('en-SG',{timeZone:'Asia/Singapore',hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'})+' SGT';
+  }catch(e){
+    document.getElementById('wx-loading').style.display='none';
+    document.getElementById('wx-error').style.display='block';
+    document.getElementById('wx-error').textContent='Could not load forecast. Check connection.\n'+e.message;
+  }
+}
+function switchTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');btn.classList.add('active');
+}
+function tog(id){
+  const el=document.getElementById(id),ch=document.getElementById('ch-'+id);
+  if(!el)return;const open=el.classList.toggle('open');
+  if(ch)ch.style.transform=open?'rotate(90deg)':'rotate(0deg)';
+}
+(function(){
+  const d=Math.ceil((new Date('2026-04-02T19:50:00+08:00')-new Date())/86400000);
+  const el=document.getElementById('cdnum');if(!el)return;
+  el.textContent=d>0?d:d===0?'✈':'GO';
+})();
+buildOutdoor();loadWeather();
+</script>
+</body>
+</html>
